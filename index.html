@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Does Anybody Else</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Starfield Background -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Earth -->
+    <div class="earth-container">
+        <img src="earth.gif" alt="Earth" class="earth" id="earth">
+    </div>
+    
+    <!-- Intro Mode -->
+    <div class="intro-container" id="introContainer">
+        <div class="scanner-status" id="scannerStatus">LONG-RANGE SCANNERS ACTIVE. ALL CHANNELS QUIET.</div>
+        <div class="signal-detection" id="signalDetection">INTERESTING...PICKING UP A FAINT SIGNAL OUT THERE.</div>
+        <button class="investigate-btn" id="investigateBtn">investigate</button>
+    </div>
+    
+    <!-- HUD Interface -->
+    <div class="hud-container">
+        <!-- Top HUD elements -->
+        <div class="hud-top">
+            <div class="hud-element">
+                <div class="transmission-status">incoming transmission</div>
+                <div class="coordinates">earth-orbit-001</div>
+            </div>
+            <div class="hud-element">
+                <div class="system-status">signal received</div>
+                <div class="signal-strength">
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom HUD elements -->
+        <div class="hud-bottom">
+        </div>
+    </div>
+    
+    <!-- Main Content Container -->
+    <div class="container">
+        <div id="textContainer">
+            <span class="static-text">does anybody else</span>
+            <span class="cycling-text" id="cyclingText"></span>
+            <span class="cursor"></span>
+            
+            <!-- Signal overload mode content -->
+            <div class="signal-overload-content" id="signalOverload" style="display: none;">
+                <div class="signal-overload-header">
+                    you have reached planet earth<br>SIGNAL OVERLOAD
+                </div>
+                <div class="scrolling-text-container" id="scrollingContainer">
+                </div>
+            </div>
+            
+            <!-- Lost signal mode content -->
+            <div class="lost-signal-content" id="lostSignal">
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons Container -->
+    <div class="buttons-container">
+        <div class="transmission-buttons">
+            <button class="transmission-btn" id="yesBtn">yes</button>
+            <button class="transmission-btn" id="noBtn">no</button>
+        </div>
+    </div>
+
+    <!-- Start Over Button -->
+    <button class="start-over-btn" id="startOverBtn">start over</button>
+
+    <!-- Scripts -->
+    <script src="titles.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
