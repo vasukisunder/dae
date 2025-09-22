@@ -20,6 +20,9 @@ const startOverBtn = document.getElementById('startOverBtn');
 const loadingContainer = document.getElementById('loadingContainer');
 const loadingBarFill = document.getElementById('loadingBarFill');
 const loadingPercentage = document.getElementById('loadingPercentage');
+const voidContainer = document.getElementById('voidContainer');
+const voidBarFill = document.getElementById('voidBarFill');
+const voidPercentage = document.getElementById('voidPercentage');
 
 // State Variables
 let isWaitingForResponse = false;
@@ -31,6 +34,8 @@ let isIntroMode = true;
 let scrollingInterval;
 let loadingProgress = 0; // 0 to 100, represents loading bar percentage
 let hasShownLoadingBar = false;
+let voidProgress = 0; // 0 to 100, represents void bar percentage
+let hasShownVoidBar = false;
 
 // Create Starfield
 function createStars() {
@@ -122,6 +127,8 @@ function restartExperience() {
     isIntroMode = true;
     loadingProgress = 0;
     hasShownLoadingBar = false;
+    voidProgress = 0;
+    hasShownVoidBar = false;
     
     // Clear any intervals
     if (scrollingInterval) {
@@ -138,6 +145,13 @@ function restartExperience() {
     loadingPercentage.textContent = '0%';
     loadingBarFill.style.background = 'linear-gradient(90deg, #66b3ff 0%, #99ccff 50%, #ffffff 100%)';
     loadingBarFill.style.boxShadow = '0 0 8px rgba(102, 179, 255, 0.6)';
+    
+    // Hide and reset void bar
+    hideVoidBar();
+    voidBarFill.style.width = '0%';
+    voidPercentage.textContent = '0%';
+    voidBarFill.style.background = 'linear-gradient(90deg, #ff6666 0%, #ff9999 50%, #ffcccc 100%)';
+    voidBarFill.style.boxShadow = '0 0 8px rgba(255, 102, 102, 0.6)';
     
     // Clear signal overload content
     scrollingContainer.innerHTML = '';
@@ -169,9 +183,10 @@ function activateLostSignal() {
     document.querySelector('.cursor').style.display = 'none';
     buttonsContainer.style.display = 'none';
     
-    // Hide HUD top elements and loading bar
+    // Hide HUD top elements and both progress bars
     hudTop.style.display = 'none';
     hideLoadingBar();
+    hideVoidBar();
     
     // Show lost signal interface
     lostSignal.style.display = 'block';
@@ -224,9 +239,10 @@ function activateSignalOverload() {
     document.querySelector('.cursor').style.display = 'none';
     buttonsContainer.style.display = 'none';
     
-    // Hide HUD top elements and loading bar
+    // Hide HUD top elements and both progress bars
     hudTop.style.display = 'none';
     hideLoadingBar();
+    hideVoidBar();
     
     // Show signal overload interface
     signalOverload.style.display = 'block';
@@ -299,6 +315,42 @@ function updateLoadingBar() {
 
 function hideLoadingBar() {
     loadingContainer.style.display = 'none';
+}
+
+// Void Bar Functions
+function showVoidBar() {
+    if (!hasShownVoidBar) {
+        voidContainer.style.display = 'block';
+        hasShownVoidBar = true;
+    }
+}
+
+function updateVoidBar() {
+    // Calculate void progress based on negative earthDistance
+    // earthDistance ranges from 0 to -5, void bar should be 0-100%
+    // When earthDistance reaches -5, void should be 100% (lost signal)
+    const normalizedDistance = Math.max(0, -earthDistance); // Only negative values count toward void
+    voidProgress = Math.min(100, (normalizedDistance / 5) * 100);
+    
+    // Update the visual elements
+    voidBarFill.style.width = voidProgress + '%';
+    voidPercentage.textContent = Math.round(voidProgress) + '%';
+    
+    // Change color intensity as it gets closer to full
+    if (voidProgress >= 80) {
+        voidBarFill.style.background = 'linear-gradient(90deg, #cc0000 0%, #ff3333 50%, #ff6666 100%)';
+        voidBarFill.style.boxShadow = '0 0 12px rgba(204, 0, 0, 0.8)';
+    } else if (voidProgress >= 50) {
+        voidBarFill.style.background = 'linear-gradient(90deg, #ff3333 0%, #ff6666 50%, #ff9999 100%)';
+        voidBarFill.style.boxShadow = '0 0 10px rgba(255, 51, 51, 0.7)';
+    } else {
+        voidBarFill.style.background = 'linear-gradient(90deg, #ff6666 0%, #ff9999 50%, #ffcccc 100%)';
+        voidBarFill.style.boxShadow = '0 0 8px rgba(255, 102, 102, 0.6)';
+    }
+}
+
+function hideVoidBar() {
+    voidContainer.style.display = 'none';
 }
 
 // Earth Distance Functions
@@ -391,19 +443,49 @@ function handleUserResponse(response) {
         // Show loading bar after first yes response
         if (earthDistance === 1) {
             showLoadingBar();
+            // Hide void bar if it was showing
+            if (hasShownVoidBar) {
+                hideVoidBar();
+            }
         }
     } else if (response === 'no') {
         earthDistance = Math.max(earthDistance - 1, -5); // Move farther from earth (min -5)
-        // Show loading bar after first yes response (even if user said no afterwards)
-        if (hasShownLoadingBar) {
-            // Keep loading bar visible if it was already shown
+        // Show void bar after first no response that goes negative
+        if (earthDistance === -1) {
+            showVoidBar();
+            // Hide loading bar if it was showing
+            if (hasShownLoadingBar) {
+                hideLoadingBar();
+            }
         }
     }
     
-    // Update earth appearance and loading bar
+    // Update earth appearance and appropriate progress bar
     updateEarthDistance();
-    if (hasShownLoadingBar) {
+    
+    // Update the appropriate bar based on earthDistance
+    if (earthDistance > 0 && hasShownLoadingBar) {
+        // Show loading bar for positive earthDistance
+        if (hasShownVoidBar) {
+            hideVoidBar();
+            showLoadingBar();
+        }
         updateLoadingBar();
+    } else if (earthDistance < 0 && hasShownVoidBar) {
+        // Show void bar for negative earthDistance
+        if (hasShownLoadingBar) {
+            hideLoadingBar();
+            showVoidBar();
+        }
+        updateVoidBar();
+    } else if (earthDistance === 0) {
+        // At neutral position, hide both bars
+        if (hasShownLoadingBar) {
+            hideLoadingBar();
+        }
+        if (hasShownVoidBar) {
+            hideVoidBar();
+        }
     }
     
     // Check if we've reached maximum earth level
@@ -432,7 +514,7 @@ function handleUserResponse(response) {
     cyclingTextElement.textContent = '';
     
     // Log the response and current distance
-    console.log('User response:', response, '| Earth distance:', earthDistance, '| Loading progress:', Math.round(loadingProgress) + '%');
+    console.log('User response:', response, '| Earth distance:', earthDistance, '| Loading progress:', Math.round(loadingProgress) + '%', '| Void progress:', Math.round(voidProgress) + '%');
     
     // After 0.5 seconds, start the next transmission cycle
     setTimeout(() => {

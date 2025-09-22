@@ -359,6 +359,85 @@ body::before {
     100% { transform: translateX(20px); opacity: 0; }
 }
 
+/* Void Bar */
+.void-container {
+    position: fixed;
+    top: 100px;
+    right: 200px;
+    z-index: 15;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Consolas', monospace;
+    text-align: right;
+}
+
+.void-text {
+    color: #ff6666;
+    font-size: 0.7rem;
+    text-shadow: 0 0 8px #ff6666;
+    animation: voidPulse 3s ease-in-out infinite;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.void-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.void-bar-background {
+    width: 120px;
+    height: 8px;
+    background: rgba(255, 102, 102, 0.3);
+    border: 1px solid #ff6666;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.void-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6666 0%, #ff9999 50%, #ffcccc 100%);
+    width: 0%;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(255, 102, 102, 0.6);
+    position: relative;
+}
+
+.void-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 100%);
+    animation: voidShimmer 2s ease-in-out infinite;
+}
+
+.void-percentage {
+    color: #ff6666;
+    font-size: 0.6rem;
+    text-shadow: 0 0 5px #ff6666;
+    min-width: 25px;
+}
+
+@keyframes voidPulse {
+    0%, 100% { 
+        opacity: 0.8;
+        text-shadow: 0 0 8px #ff6666;
+    }
+    50% { 
+        opacity: 1;
+        text-shadow: 0 0 12px #ff6666, 0 0 20px #ff6666;
+    }
+}
+
+@keyframes voidShimmer {
+    0% { transform: translateX(-20px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(20px); opacity: 0; }
+}
+
 /* Start Over Button */
 .start-over-btn {
     position: fixed;
@@ -894,6 +973,25 @@ body::before {
     }
     
     .loading-percentage {
+        font-size: 0.5rem;
+    }
+    
+    /* Responsive void bar */
+    .void-container {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .void-text {
+        font-size: 0.6rem;
+    }
+    
+    .void-bar-background {
+        width: 100px;
+        height: 6px;
+    }
+    
+    .void-percentage {
         font-size: 0.5rem;
     }
 }
