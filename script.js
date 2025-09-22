@@ -17,6 +17,9 @@ const signalDetection = document.getElementById('signalDetection');
 const investigateBtn = document.getElementById('investigateBtn');
 const lostSignal = document.getElementById('lostSignal');
 const startOverBtn = document.getElementById('startOverBtn');
+const loadingContainer = document.getElementById('loadingContainer');
+const loadingBarFill = document.getElementById('loadingBarFill');
+const loadingPercentage = document.getElementById('loadingPercentage');
 
 // State Variables
 let isWaitingForResponse = false;
@@ -26,6 +29,8 @@ let isSignalOverloadMode = false;
 let isLostSignalMode = false;
 let isIntroMode = true;
 let scrollingInterval;
+let loadingProgress = 0; // 0 to 100, represents loading bar percentage
+let hasShownLoadingBar = false;
 
 // Create Starfield
 function createStars() {
@@ -115,6 +120,8 @@ function restartExperience() {
     isSignalOverloadMode = false;
     isLostSignalMode = false;
     isIntroMode = true;
+    loadingProgress = 0;
+    hasShownLoadingBar = false;
     
     // Clear any intervals
     if (scrollingInterval) {
@@ -124,6 +131,13 @@ function restartExperience() {
     
     // Reset earth appearance
     updateEarthDistance();
+    
+    // Hide and reset loading bar
+    hideLoadingBar();
+    loadingBarFill.style.width = '0%';
+    loadingPercentage.textContent = '0%';
+    loadingBarFill.style.background = 'linear-gradient(90deg, #66b3ff 0%, #99ccff 50%, #ffffff 100%)';
+    loadingBarFill.style.boxShadow = '0 0 8px rgba(102, 179, 255, 0.6)';
     
     // Clear signal overload content
     scrollingContainer.innerHTML = '';
@@ -155,8 +169,9 @@ function activateLostSignal() {
     document.querySelector('.cursor').style.display = 'none';
     buttonsContainer.style.display = 'none';
     
-    // Hide HUD top elements
+    // Hide HUD top elements and loading bar
     hudTop.style.display = 'none';
+    hideLoadingBar();
     
     // Show lost signal interface
     lostSignal.style.display = 'block';
@@ -209,8 +224,9 @@ function activateSignalOverload() {
     document.querySelector('.cursor').style.display = 'none';
     buttonsContainer.style.display = 'none';
     
-    // Hide HUD top elements
+    // Hide HUD top elements and loading bar
     hudTop.style.display = 'none';
+    hideLoadingBar();
     
     // Show signal overload interface
     signalOverload.style.display = 'block';
@@ -247,6 +263,42 @@ function startScrollingText() {
     // Add lines at moderate intervals for readability
     scrollingInterval = setInterval(addScrollingLine, 1200); // New line every 1.2 seconds
     addScrollingLine(); // Add first line immediately
+}
+
+// Loading Bar Functions
+function showLoadingBar() {
+    if (!hasShownLoadingBar) {
+        loadingContainer.style.display = 'block';
+        hasShownLoadingBar = true;
+    }
+}
+
+function updateLoadingBar() {
+    // Calculate loading progress based on earthDistance
+    // earthDistance ranges from -5 to +10, loading bar should be 0-100%
+    // When earthDistance reaches +10, loading should be 100% (signal overload)
+    const normalizedDistance = Math.max(0, earthDistance); // Only positive values count toward loading
+    loadingProgress = Math.min(100, (normalizedDistance / 10) * 100);
+    
+    // Update the visual elements
+    loadingBarFill.style.width = loadingProgress + '%';
+    loadingPercentage.textContent = Math.round(loadingProgress) + '%';
+    
+    // Change color as it gets closer to full
+    if (loadingProgress >= 80) {
+        loadingBarFill.style.background = 'linear-gradient(90deg, #ff6666 0%, #ff9999 50%, #ffffff 100%)';
+        loadingBarFill.style.boxShadow = '0 0 12px rgba(255, 102, 102, 0.8)';
+    } else if (loadingProgress >= 50) {
+        loadingBarFill.style.background = 'linear-gradient(90deg, #ffcc66 0%, #ffdd99 50%, #ffffff 100%)';
+        loadingBarFill.style.boxShadow = '0 0 10px rgba(255, 204, 102, 0.7)';
+    } else {
+        loadingBarFill.style.background = 'linear-gradient(90deg, #66b3ff 0%, #99ccff 50%, #ffffff 100%)';
+        loadingBarFill.style.boxShadow = '0 0 8px rgba(102, 179, 255, 0.6)';
+    }
+}
+
+function hideLoadingBar() {
+    loadingContainer.style.display = 'none';
 }
 
 // Earth Distance Functions
@@ -336,12 +388,23 @@ function handleUserResponse(response) {
     // Update earth distance based on response
     if (response === 'yes') {
         earthDistance = Math.min(earthDistance + 1, 10); // Move closer to earth (max +10)
+        // Show loading bar after first yes response
+        if (earthDistance === 1) {
+            showLoadingBar();
+        }
     } else if (response === 'no') {
         earthDistance = Math.max(earthDistance - 1, -5); // Move farther from earth (min -5)
+        // Show loading bar after first yes response (even if user said no afterwards)
+        if (hasShownLoadingBar) {
+            // Keep loading bar visible if it was already shown
+        }
     }
     
-    // Update earth appearance
+    // Update earth appearance and loading bar
     updateEarthDistance();
+    if (hasShownLoadingBar) {
+        updateLoadingBar();
+    }
     
     // Check if we've reached maximum earth level
     if (earthDistance >= 10) {
@@ -369,7 +432,7 @@ function handleUserResponse(response) {
     cyclingTextElement.textContent = '';
     
     // Log the response and current distance
-    console.log('User response:', response, '| Earth distance:', earthDistance);
+    console.log('User response:', response, '| Earth distance:', earthDistance, '| Loading progress:', Math.round(loadingProgress) + '%');
     
     // After 0.5 seconds, start the next transmission cycle
     setTimeout(() => {
