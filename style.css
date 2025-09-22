@@ -283,8 +283,8 @@ body::before {
 /* Loading Bar */
 .loading-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 100px;
+    right: 200px;
     z-index: 15;
     font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Consolas', monospace;
     text-align: right;
