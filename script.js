@@ -23,6 +23,9 @@ const loadingPercentage = document.getElementById('loadingPercentage');
 const voidContainer = document.getElementById('voidContainer');
 const voidBarFill = document.getElementById('voidBarFill');
 const voidPercentage = document.getElementById('voidPercentage');
+const sentimentIndicator = document.getElementById('sentimentIndicator');
+const sentimentStatus = document.getElementById('sentimentStatus');
+const sentimentConfidence = document.getElementById('sentimentConfidence');
 
 // State Variables
 let isWaitingForResponse = false;
@@ -36,6 +39,10 @@ let loadingProgress = 0; // 0 to 100, represents loading bar percentage
 let hasShownLoadingBar = false;
 let voidProgress = 0; // 0 to 100, represents void bar percentage
 let hasShownVoidBar = false;
+
+// Sentiment Analysis
+let sentimentAnalyzer;
+let currentSentiment = null;
 
 // Create Starfield
 function createStars() {
@@ -129,6 +136,10 @@ function restartExperience() {
     hasShownLoadingBar = false;
     voidProgress = 0;
     hasShownVoidBar = false;
+    
+    // Clear sentiment effects
+    clearSentimentEffects();
+    currentSentiment = null;
     
     // Clear any intervals
     if (scrollingInterval) {
@@ -264,7 +275,18 @@ function startScrollingText() {
         
         const line = document.createElement('div');
         line.className = 'scrolling-text';
-        line.textContent = `does anybody else ${titles[titleIndex]}`;
+        const fullText = `does anybody else ${titles[titleIndex]}`;
+        line.textContent = fullText;
+        
+        // Apply sentiment analysis to each line
+        if (sentimentAnalyzer) {
+            const sentiment = sentimentAnalyzer.analyze(fullText);
+            const emotionColor = sentimentAnalyzer.getEmotionColor(sentiment.emotion);
+            
+            // Apply color based on sentiment - no glow effects
+            line.style.color = emotionColor;
+            line.style.textShadow = '';
+        }
         
         scrollingContainer.appendChild(line);
         
@@ -376,13 +398,30 @@ function updateEarthDistance() {
 function typeText(text, element, callback) {
     element.textContent = '';
     
+    // Analyze sentiment of the text
+    if (sentimentAnalyzer) {
+        currentSentiment = sentimentAnalyzer.analyze(`does anybody else ${text}`);
+        console.log('Analyzing text:', `does anybody else ${text}`);
+        console.log('Sentiment result:', currentSentiment);
+    }
+    
     let i = 0;
     const timer = setInterval(() => {
         if (i < text.length) {
             element.textContent += text.charAt(i);
             i++;
+            
+            // Apply sentiment effects as text appears (for gradual reveal)
+            if (currentSentiment && i > text.length * 0.3) {
+                applySentimentEffects(currentSentiment);
+            }
         } else {
             clearInterval(timer);
+            
+            // Apply full sentiment effects when typing is complete
+            if (currentSentiment) {
+                applySentimentEffects(currentSentiment);
+            }
             
             // Show buttons after typing completes
             setTimeout(() => {
@@ -400,6 +439,10 @@ function typeText(text, element, callback) {
 // Transmission Cycle
 function startTransmissionCycle() {
     if (isWaitingForResponse || isSignalOverloadMode || isLostSignalMode || isIntroMode) return;
+    
+    // Clear previous sentiment effects
+    clearSentimentEffects();
+    currentSentiment = null;
     
     // Pick a random title from the array
     const randomIndex = Math.floor(Math.random() * titles.length);
@@ -539,7 +582,81 @@ startOverBtn.addEventListener('click', () => {
     restartExperience();
 });
 
+// Initialize sentiment analyzer
+function initializeSentimentAnalyzer() {
+    sentimentAnalyzer = new SentimentAnalyzer();
+    console.log('Sentiment analyzer initialized');
+}
+
+// Apply sentiment-based visual effects
+function applySentimentEffects(sentiment) {
+    if (!sentiment) return;
+    
+    const emotionColor = sentimentAnalyzer.getEmotionColor(sentiment.emotion);
+    const intensity = sentimentAnalyzer.getIntensity(sentiment.magnitude);
+    
+    // Update text color based on sentiment
+    const cyclingText = document.querySelector('.cycling-text');
+    if (cyclingText) {
+        cyclingText.style.color = emotionColor;
+        // Remove text glow effects - just keep the color
+        cyclingText.style.textShadow = '';
+    }
+    
+    // Update sentiment indicator in HUD
+    if (sentimentIndicator && sentimentStatus && sentimentConfidence) {
+        sentimentIndicator.style.display = 'block';
+        sentimentStatus.textContent = sentiment.emotion;
+        sentimentStatus.style.color = emotionColor;
+        sentimentStatus.style.textShadow = `0 0 5px ${emotionColor}`;
+        
+        const confidencePercent = Math.round(sentiment.confidence * 100);
+        sentimentConfidence.textContent = `${confidencePercent}%`;
+    }
+    
+    // Update HUD elements subtly
+    const transmissionStatus = document.querySelector('.transmission-status');
+    const systemStatus = document.querySelector('.system-status');
+    
+    if (transmissionStatus && intensity !== 'minimal') {
+        transmissionStatus.style.textShadow = `0 0 5px ${emotionColor}`;
+    }
+    
+    if (systemStatus && intensity !== 'minimal') {
+        systemStatus.style.textShadow = `0 0 5px ${emotionColor}`;
+    }
+    
+    // Log sentiment for debugging
+    console.log(`Sentiment: ${sentiment.emotion} (${sentiment.score.toFixed(2)}), Intensity: ${intensity}, Color: ${emotionColor}`);
+}
+
+// Clear sentiment effects
+function clearSentimentEffects() {
+    const cyclingText = document.querySelector('.cycling-text');
+    if (cyclingText) {
+        cyclingText.style.color = '#ffffff';
+        cyclingText.style.textShadow = '';
+    }
+    
+    const transmissionStatus = document.querySelector('.transmission-status');
+    const systemStatus = document.querySelector('.system-status');
+    
+    if (transmissionStatus) {
+        transmissionStatus.style.textShadow = '0 0 5px #66b3ff';
+    }
+    
+    if (systemStatus) {
+        systemStatus.style.textShadow = '0 0 5px #66b3ff';
+    }
+    
+    // Hide sentiment indicator
+    if (sentimentIndicator) {
+        sentimentIndicator.style.display = 'none';
+    }
+}
+
 // Initialize
+initializeSentimentAnalyzer();
 createStars();
 updateEarthDistance(); // Set initial earth appearance
 

@@ -40,6 +40,10 @@
                     <div class="signal-bar"></div>
                 </div>
             </div>
+            <div class="hud-element" id="sentimentIndicator" style="display: none;">
+                <div class="sentiment-status" id="sentimentStatus">neutral</div>
+                <div class="sentiment-confidence" id="sentimentConfidence">--</div>
+            </div>
         </div>
         
         <!-- Loading Bar (top right) -->
@@ -104,6 +108,7 @@
 
     <!-- Scripts -->
     <script src="titles.js"></script>
+    <script src="sentiment.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
