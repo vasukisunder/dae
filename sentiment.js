@@ -11,7 +11,7 @@ class SentimentAnalyzer {
             'great': 2, 'good': 2, 'nice': 2, 'pleasant': 2, 'enjoy': 2, 'satisfied': 2,
             'like': 1, 'fun': 2, 'laugh': 2, 'smile': 2, 'appreciate': 2, 'grateful': 2,
             'relieved': 2, 'comfortable': 1, 'content': 2, 'pleased': 2, 'thrilled': 3,
-            'delighted': 3, 'euphoric': 4, 'elated': 3, 'cheerful': 2, 'optimistic': 2,
+            'delighted': 3, 'euphoric': 4,'euphoria': 4, 'elated': 3, 'cheerful': 2, 'optimistic': 2,
             'hopeful': 2, 'confident': 2, 'peaceful': 2, 'calm': 1, 'relaxed': 1,
             'beautiful': 2, 'perfect': 3, 'best': 3, 'better': 1, 'awesome': 3,
             'fantastic': 3, 'incredible': 3, 'outstanding': 3, 'excellent': 3,
@@ -231,7 +231,7 @@ class SentimentAnalyzer {
 
         // Check for specific emotional patterns with more keywords
         const hasAnxiety = sentimentWords.some(w => 
-            ['anxious', 'nervous', 'worried', 'panic', 'overwhelmed', 'stressed', 'get nervous', 'get anxious', 'freak out', 'get scared', 'uncomfortable', 'awkward'].includes(w.word));
+            ['anxious','embarassment', 'nervous', 'worried', 'panic', 'overwhelmed', 'stressed', 'get nervous', 'get anxious', 'freak out', 'get scared', 'uncomfortable', 'awkward'].includes(w.word));
         const hasSadness = sentimentWords.some(w => 
             ['sad', 'depressed', 'lonely', 'hopeless', 'hurt', 'miss', 'cry', 'tear up', 'feel sad', 'feel lonely', 'feel lost', 'distressed'].includes(w.word));
         const hasAnger = sentimentWords.some(w => 
